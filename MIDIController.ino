@@ -34,19 +34,24 @@ unsigned long debounceDelay = 50;
 Encoder myEnc(3, 2);  // INT0 & INT 1
 
 static void OnControlChange(byte channel, byte number, byte value) {
-  Serial.print(F("ControlChange from channel: "));
-  Serial.print(channel);
-  Serial.print(F(", number: "));
-  Serial.print(number);
-  Serial.print(F(", value: "));
-  Serial.println(value);
+  // Serial.print(F("ControlChange from channel: "));
+  // Serial.print(channel);
+  // Serial.print(F(", number: "));
+  // Serial.print(number);
+  // Serial.print(F(", value: "));
+  // Serial.println(value);
   switch (number) {
     case 20:
-      // active/désactive le bazar
-      isControllerActive = !isControllerActive;
-      if (stateLED2) {
-        // turn off red led 
-        stateLED2 = 0;
+      if (value == 0xf) {
+        // active le bazar
+        isControllerActive = true;
+      } else if (value == 0x0) {
+        // désactive le bazar
+        isControllerActive = false;
+        if (stateLED2) {
+          // turn off red led
+          stateLED2 = 0;
+        }
       }
       break;
     default:
@@ -56,7 +61,7 @@ static void OnControlChange(byte channel, byte number, byte value) {
 }
 
 void setup() {
-  Serial.begin(31250); // MIDI baud rate
+  Serial.begin(31250);  // MIDI baud rate
   while (!Serial)
     ;
 
@@ -91,7 +96,6 @@ void loop() {
       if (diff > 0 && stateLED2) val = 10;
       if (diff < 0 && stateLED2) val = 30;
       oldPosition = newPosition;
-      Serial.println(newPosition);
       // Send MIDI message
       MIDI.sendControlChange(21, val, 1);
     }
@@ -106,10 +110,10 @@ void loop() {
   }
   if ((millis() - lastDebounceTimeSW1) > debounceDelay) {
     if (readSW1 != stateSW1) {
-      Serial.println(readSW1);
       stateSW1 = readSW1;
       if (stateSW1 == LOW) {
-        Serial.println("reinit value");
+        // Switch was pressed -> send message to reset to initial value
+        MIDI.sendControlChange(22, 1, 1);
       }
     }
   }
