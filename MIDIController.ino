@@ -1,7 +1,9 @@
+#include "myButton.h"
+#include "myLed.h"
+
 /* Encoder Library 
  * http://www.pjrc.com/teensy/td_libs_Encoder.html
  */
-
 // This optional setting causes Encoder to use more optimized code,
 // It must be defined before Encoder.h is included.
 #define ENCODER_OPTIMIZE_INTERRUPTS
@@ -10,28 +12,22 @@
 // MIDI
 #include <USB-MIDI.h>
 USBMIDI_CREATE_DEFAULT_INSTANCE();
+
 bool isControllerActive = false;
+bool turbo = false;  // Values incremented by +/-1 when false, +/-10 when true
 
-#define SW1 4
-#define SW2 5
-#define LED1 6
-#define LED2 7
-
-int stateSW1 = 1;  // HIGH because of the PULL_UP
-int stateSW2 = 1;
-int stateLED1 = 0;
-int stateLED2 = 0;
-int lastStateSW1 = 1;
-int lastStateSW2 = 1;
-unsigned long lastDebounceTimeSW1 = 0;
-unsigned long lastDebounceTimeSW2 = 0;
-unsigned long debounceDelay = 50;
+MyButton sw1(4);  // encoder's switch
+MyButton sw2(5);  //momentary switch
+MyLed greenLed(6);
+MyLed redLed(7);
 
 // Change these two numbers to the pins connected to your encoder.
 //   Best Performance: both pins have interrupt capability
 //   Good Performance: only the first pin has interrupt capability
 //   Low Performance:  neither pin has interrupt capability
 Encoder myEnc(3, 2);  // INT0 & INT 1
+
+long oldPosition = 0; // Encoder's position
 
 static void OnControlChange(byte channel, byte number, byte value) {
   // Serial.print(F("ControlChange from channel: "));
@@ -42,20 +38,19 @@ static void OnControlChange(byte channel, byte number, byte value) {
   // Serial.println(value);
   switch (number) {
     case 20:
-      if (value == 0xf) {
+      if (value == 0x20) {
         // active le bazar
         isControllerActive = true;
-      } else if (value == 0x0) {
+      } else if (value == 0x30) {
         // désactive le bazar
         isControllerActive = false;
-        if (stateLED2) {
-          // turn off red led
-          stateLED2 = 0;
+        if (turbo) {
+          redLed.off();
         }
       }
       break;
     default:
-      Serial.println("message reçu");
+      Serial.println(F("message reçu"));
       break;
   }
 }
@@ -65,21 +60,12 @@ void setup() {
   while (!Serial)
     ;
 
-  pinMode(SW1, INPUT_PULLUP);  // SW1 (encoder)
-  pinMode(SW2, INPUT_PULLUP);  // SW2 (momentary switch)
-  pinMode(LED1, OUTPUT);       // LED1 (green)
-  pinMode(LED2, OUTPUT);       // LED2 (red)
-  digitalWrite(LED1, LOW);
-  digitalWrite(LED2, LOW);
-
-  MIDI.begin(1);
+  MIDI.begin();
   MIDI.turnThruOff();
   MIDI.setHandleControlChange(OnControlChange);
 
-  Serial.println("Arduino ready!");
+  Serial.println(F("Arduino ready!"));
 }
-
-long oldPosition = 0;
 
 void loop() {
   // MIDI ----------
@@ -93,8 +79,8 @@ void loop() {
       int val;
       if (diff > 0) val = 1;
       if (diff < 0) val = 3;
-      if (diff > 0 && stateLED2) val = 10;
-      if (diff < 0 && stateLED2) val = 30;
+      if (diff > 0 && turbo) val = 10;
+      if (diff < 0 && turbo) val = 30;
       oldPosition = newPosition;
       // Send MIDI message
       MIDI.sendControlChange(21, val, 1);
@@ -102,37 +88,24 @@ void loop() {
   }
 
   // Momentary Switches -----------
-  int readSW1 = digitalRead(SW1);  // Encoder's Switch
-  int readSW2 = digitalRead(SW2);  // Momentary Switch
-
-  if (readSW1 != lastStateSW1) {
-    lastDebounceTimeSW1 = millis();
+  if (sw1.isPressed()) {
+    // Encoder'switch-> send message to reset to initial value
+    MIDI.sendControlChange(22, 1, 1);
   }
-  if ((millis() - lastDebounceTimeSW1) > debounceDelay) {
-    if (readSW1 != stateSW1) {
-      stateSW1 = readSW1;
-      if (stateSW1 == LOW) {
-        // Switch was pressed -> send message to reset to initial value
-        MIDI.sendControlChange(22, 1, 1);
-      }
+
+  if (sw2.isPressed() && isControllerActive) {
+    turbo = !turbo;
+    if (turbo) {
+      redLed.on();
+    } else {
+      redLed.off();
     }
   }
 
-  if (readSW2 != lastStateSW2) {
-    lastDebounceTimeSW2 = millis();
+  // Green status led
+  if (isControllerActive) {
+    greenLed.on();
+  } else {
+    greenLed.off();
   }
-  if ((millis() - lastDebounceTimeSW2) > debounceDelay) {
-    if (readSW2 != stateSW2 && isControllerActive) {
-      stateSW2 = readSW2;
-      if (stateSW2 == LOW) {
-        stateLED2 = !stateLED2;
-      }
-    }
-  }
-
-
-  digitalWrite(LED1, isControllerActive);
-  digitalWrite(LED2, stateLED2);
-  lastStateSW1 = readSW1;
-  lastStateSW2 = readSW2;
 }
