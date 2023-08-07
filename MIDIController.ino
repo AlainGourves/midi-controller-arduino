@@ -27,7 +27,22 @@ MyLed redLed(7);
 //   Low Performance:  neither pin has interrupt capability
 Encoder myEnc(3, 2);  // INT0 & INT 1
 
-long oldPosition = 0; // Encoder's position
+long oldPosition = 0;  // Encoder's position
+
+void blink() {
+  greenLed.on();
+  delay(100);
+  greenLed.off();
+  redLed.on();
+  delay(100);
+  greenLed.on();
+  redLed.off();
+  delay(100);
+  greenLed.off();
+  redLed.on();
+  delay(100);
+  redLed.off();
+}
 
 static void OnControlChange(byte channel, byte number, byte value) {
   // Serial.print(F("ControlChange from channel: "));
@@ -41,6 +56,8 @@ static void OnControlChange(byte channel, byte number, byte value) {
       if (value == 0x20) {
         // active le bazar
         isControllerActive = true;
+        MIDI.sendControlChange(20, 4, 12);
+        blink();
       } else if (value == 0x30) {
         // désactive le bazar
         isControllerActive = false;
