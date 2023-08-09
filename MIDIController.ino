@@ -12,6 +12,10 @@
 // MIDI
 #include <USB-MIDI.h>
 USBMIDI_CREATE_DEFAULT_INSTANCE();
+int channels[3] = { 10, 11, 12 };  // reserved channels for each controller
+int channelsLength = 3;            // stores channels length
+int idxChannel = 0;                // index of the next channel to use
+int myChannel = 1;
 
 bool isControllerActive = false;
 bool turbo = false;  // Values incremented by +/-1 when false, +/-10 when true
@@ -31,38 +35,54 @@ long oldPosition = 0;  // Encoder's position
 
 void blink() {
   greenLed.on();
-  delay(100);
+  delay(50);
   greenLed.off();
   redLed.on();
-  delay(100);
+  delay(50);
   greenLed.on();
   redLed.off();
-  delay(100);
+  delay(50);
   greenLed.off();
   redLed.on();
-  delay(100);
+  delay(50);
+  greenLed.on();
+  redLed.off();
+  delay(50);
+  greenLed.off();
+  redLed.on();
+  delay(50);
   redLed.off();
 }
 
 static void OnControlChange(byte channel, byte number, byte value) {
-  // Serial.print(F("ControlChange from channel: "));
-  // Serial.print(channel);
-  // Serial.print(F(", number: "));
-  // Serial.print(number);
-  // Serial.print(F(", value: "));
-  // Serial.println(value);
+  Serial.print(F("ControlChange from channel: "));
+  Serial.print(channel);
+  Serial.print(F(", number: "));
+  Serial.print(number);
+  Serial.print(F(", value: "));
+  Serial.println(value);
   switch (number) {
     case 20:
-      if (value == 0x20) {
+      // Manage:
+      // - channel attribution for each controller (0x10 + channel number in hex)
+      // - controller activation (0x20)
+      // - controller desactivation (0x30)
+      if (value == 0x10) {
+        myChannel = channels[idxChannel];
+        idxChannel += 1;
+        if (idxChannel == channelsLength) idxChannel = 0;
+        MIDI.sendControlChange(20, 8, myChannel);
+      } else if (value == 0x20) {
         // active le bazar
         isControllerActive = true;
-        MIDI.sendControlChange(20, 4, 12);
+        MIDI.sendControlChange(20, 4, myChannel);
         blink();
       } else if (value == 0x30) {
         // désactive le bazar
         isControllerActive = false;
         if (turbo) {
           redLed.off();
+          turbo = false;
         }
       }
       break;
@@ -77,7 +97,7 @@ void setup() {
   while (!Serial)
     ;
 
-  MIDI.begin();
+  MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all incoming messages
   MIDI.turnThruOff();
   MIDI.setHandleControlChange(OnControlChange);
 
@@ -100,29 +120,29 @@ void loop() {
       if (diff < 0 && turbo) val = 30;
       oldPosition = newPosition;
       // Send MIDI message
-      MIDI.sendControlChange(21, val, 1);
+      MIDI.sendControlChange(21, val, myChannel);
     }
   }
 
   // Momentary Switches -----------
   if (sw1.isPressed()) {
     // Encoder'switch-> send message to reset to initial value
-    MIDI.sendControlChange(22, 1, 1);
+    MIDI.sendControlChange(22, 1, myChannel);
   }
 
   if (sw2.isPressed() && isControllerActive) {
     turbo = !turbo;
-    if (turbo) {
-      redLed.on();
-    } else {
-      redLed.off();
-    }
   }
 
-  // Green status led
+  // leds status
   if (isControllerActive) {
     greenLed.on();
   } else {
     greenLed.off();
+  }
+  if (turbo) {
+    redLed.on();
+  } else {
+    redLed.off();
   }
 }
