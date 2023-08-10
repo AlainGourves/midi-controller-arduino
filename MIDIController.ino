@@ -25,6 +25,13 @@ MyButton sw2(5);  //momentary switch
 MyLed greenLed(6);
 MyLed redLed(7);
 
+/* -----------------------------------------------------------------------------------------DEBUGGING-----------*/
+#define DEBUG false  // flag to turn on/off debugging, true to have Serial
+#ifdef DEBUG
+#define Serial Serial
+#endif
+/* -----------------------------------------------------------------------------------------DEBUGGING-----------*/
+
 // Change these two numbers to the pins connected to your encoder.
 //   Best Performance: both pins have interrupt capability
 //   Good Performance: only the first pin has interrupt capability
@@ -94,8 +101,11 @@ static void OnControlChange(byte channel, byte number, byte value) {
 
 void setup() {
   Serial.begin(31250);  // MIDI baud rate
-  while (!Serial)
-    ;
+#if DEBUG == true
+  while (!Serial) {
+    ;  // wait for serial port to connect. Needed for native USB
+  }
+#endif
 
   MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all incoming messages
   MIDI.turnThruOff();
