@@ -26,7 +26,7 @@ MyLed greenLed(6);
 MyLed redLed(7);
 
 /* -----------------------------------------------------------------------------------------DEBUGGING-----------*/
-#define DEBUG false  // flag to turn on/off debugging, true to have Serial
+#define DEBUG true  // flag to turn on/off debugging, true to have Serial
 #ifdef DEBUG
 #define Serial Serial
 #endif
@@ -137,7 +137,7 @@ void loop() {
   // Momentary Switches -----------
   if (sw1.isPressed()) {
     // Encoder'switch-> send message to reset to initial value
-    MIDI.sendControlChange(22, 1, myChannel);
+    MIDI.sendControlChange(21, 40, myChannel);
   }
 
   if (sw2.isPressed() && isControllerActive) {
