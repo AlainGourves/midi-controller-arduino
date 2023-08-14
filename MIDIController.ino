@@ -12,8 +12,32 @@
 // MIDI
 #include <USB-MIDI.h>
 USBMIDI_CREATE_DEFAULT_INSTANCE();
+
+struct Bob {
+  int id;
+  bool isUsed;
+} theChannels[3] = {
+  { 10, false }, { 11, false }, { 12, false }
+};
+int channelsLength = 3;  // stores channels length
+
+int findUnusedChannel() {
+  for (int i = 0; i < channelsLength; i++) {
+    if (theChannels[i].isUsed == false) {
+      return i;
+    }
+  }
+}
+
+int findByChannelNumber(int ch) {
+  for (int i = 0; i < channelsLength; i++) {
+    if (theChannels[i].id == ch) {
+      return i;
+    }
+  }
+}
+
 int channels[3] = { 10, 11, 12 };  // reserved channels for each controller
-int channelsLength = 3;            // stores channels length
 int idxChannel = 0;                // index of the next channel to use
 int myChannel = 1;
 
@@ -24,6 +48,10 @@ MyButton sw1(4);  // encoder's switch
 MyButton sw2(5);  //momentary switch
 MyLed greenLed(6);
 MyLed redLed(7);
+
+// Timer
+unsigned long previousTimer;
+const long ACTIVE_SENSING_PERIOD = 10000;
 
 /* -----------------------------------------------------------------------------------------DEBUGGING-----------*/
 #define DEBUG true  // flag to turn on/off debugging, true to have Serial
@@ -75,22 +103,31 @@ static void OnControlChange(byte channel, byte number, byte value) {
       // - controller activation (0x20)
       // - controller desactivation (0x30)
       if (value == 0x10) {
-        myChannel = channels[idxChannel];
-        idxChannel += 1;
-        if (idxChannel == channelsLength) idxChannel = 0;
-        MIDI.sendControlChange(20, 8, myChannel);
+        int id = findUnusedChannel();
+        myChannel = theChannels[id].id;
+        theChannels[id].isUsed = true;
+        MIDI.sendControlChange(20, myChannel - 1, myChannel);
       } else if (value == 0x20) {
         // active le bazar
         isControllerActive = true;
-        MIDI.sendControlChange(20, 4, myChannel);
+        MIDI.sendControlChange(20, 1, myChannel);
+        // starts timer
+        previousTimer = millis();
         blink();
       } else if (value == 0x30) {
         // désactive le bazar
+        // update channels array
+        int idx = findByChannelNumber(channel);
+        theChannels[idx].isUsed = false;
         isControllerActive = false;
         if (turbo) {
           redLed.off();
           turbo = false;
         }
+      } else if (value == 0x40) {
+        // pseudo Active Sensing message
+        // Reinit timer
+        previousTimer = millis();
       }
       break;
     default:
@@ -131,6 +168,8 @@ void loop() {
       oldPosition = newPosition;
       // Send MIDI message
       MIDI.sendControlChange(21, val, myChannel);
+      // Reinit timer
+      previousTimer = millis();
     }
   }
 
@@ -142,6 +181,16 @@ void loop() {
 
   if (sw2.isPressed() && isControllerActive) {
     turbo = !turbo;
+  }
+
+  // Timer
+  unsigned long elapsed = millis() - previousTimer;
+  if (elapsed >= ACTIVE_SENSING_PERIOD && isControllerActive) {
+    Serial.println(F("Le contrôleur doit être dans les choux!"));
+    isControllerActive = false;
+    // update channels array
+    int idx = findByChannelNumber(myChannel);
+    theChannels[idx].isUsed = false;
   }
 
   // leds status
