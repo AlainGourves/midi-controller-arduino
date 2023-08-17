@@ -19,6 +19,14 @@ void MyLed::init() {
   off();
 }
 
+int MyLed::getState() {
+  return _ledState;
+}
+
+void MyLed::setState(int state_) {
+  _ledState = state_;
+}
+
 void MyLed::update() {
   unsigned long currentMillis = millis();
   if (currentMillis - _previousMillis >= _interval) {
@@ -37,4 +45,14 @@ void MyLed::update() {
 void MyLed::blink(long rate) {
   _interval = rate;
   update();
+}
+
+void MyLed::blink(MyLed led, long rate, int iterations){
+  static int count = iterations;
+  if (count > 0) {
+    blink(rate);
+    int st = (led.getState() == 0) ? 1:0;
+    led.setState(st);
+    count--;
+  }
 }

@@ -10,8 +10,11 @@ public:
   void init();
   void update();
   void blink(long rate);
+  void blink(MyLed led, long rate, int iterations);
   void on();
   void off();
+  int getState();
+  void setState(int state_);
 private:
   int _pin;
   int _ledState;

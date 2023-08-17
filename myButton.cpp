@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "MyButton.h"
 
 MyButton::MyButton(int pin) {

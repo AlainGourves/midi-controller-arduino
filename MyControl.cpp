@@ -152,6 +152,8 @@ void MyControl::setLeds() {
 }
 
 void MyControl::blink() {
+  greenLed.blink(redLed, 500, 10);
+  /*
   greenLed.on();
   delay(50);
   greenLed.off();
@@ -170,4 +172,5 @@ void MyControl::blink() {
   redLed.on();
   delay(50);
   redLed.off();
+  */
 }
