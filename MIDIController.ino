@@ -11,7 +11,8 @@ USBMIDI_CREATE_DEFAULT_INSTANCE();
 //   int id;
 //   bool isUsed;
 // } theChannels[controlsNumber] = {
-//   { 10, false }, { 11, false }, { 12, false } // reserved channels for each controller
+//   { 10, false }, { 11, false }, { 12, false } // reserved channels for each
+//   controller
 // };
 
 int findUnusedChannel() {
@@ -44,7 +45,6 @@ const long ACTIVE_SENSING_PERIOD = 10000;
 #endif
 /* -----------------------------------------------------------------------------------------DEBUGGING-----------*/
 
-
 static void OnControlChange(byte channel, byte number, byte value) {
   Serial.print(F("ControlChange from channel: "));
   Serial.print(channel);
@@ -57,7 +57,8 @@ static void OnControlChange(byte channel, byte number, byte value) {
   switch (number) {
     case 20:
       // Manage:
-      // - channel attribution for each controller (0x10 + channel number in hex)
+      // - channel attribution for each controller (0x10 + channel number
+      // in hex)
       // - controller activation (0x20)
       // - controller desactivation (0x30)
       if (value == 0x10) {
@@ -67,13 +68,16 @@ static void OnControlChange(byte channel, byte number, byte value) {
         MIDI.sendControlChange(20, myChannel - 1, myChannel);
       } else if (value == 0x20) {
         // Activation
-        // 1) find the message's recipient (his own channel  = param 'channel')
+        // 1) find the message's recipient (his own channel  = param
+        // 'channel')
         // TODO
-        // 2) ask him to activate itself, and to reply with a confirmation message
+        // 2) ask him to activate itself, and to reply with a
+        // confirmation message
       } else if (value == 0x30) {
         // Desactivation
         // update channels array
-        // 1) find the message's recipient (his own channel  = param 'channel')
+        // 1) find the message's recipient (his own channel  = param
+        // 'channel')
         // TODO
         int idx = findByChannelNumber(channel);
         theChannels[idx].isUsed = false;
@@ -86,7 +90,6 @@ static void OnControlChange(byte channel, byte number, byte value) {
       break;
   }
 }
-
 
 MyControl controller1(3, 2, 4, 5, 6, 7);
 
@@ -103,9 +106,8 @@ void setup() {
 
   MIDI.setHandleControlChange(OnControlChange);
 
-  controller1.activate();
-
   Serial.println(F("Arduino ready!"));
+  controller1.activate();
 }
 
 void loop() {

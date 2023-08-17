@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-/* Encoder Library 
+/* Encoder Library
  * http://www.pjrc.com/teensy/td_libs_Encoder.html
  */
 // This optional setting causes Encoder to use more optimized code,
@@ -28,6 +28,7 @@ private:
   Encoder myEnc;
   int increment;
   long oldPosition;
+  bool isBlinking;
 
   // Timer
   unsigned long myTimer;
