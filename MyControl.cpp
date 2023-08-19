@@ -111,7 +111,7 @@ void MyControl::update() {
 }
 
 void MyControl::activate() {
-  isActive = true;
+  setActivity(true);
   myTimer = millis();
   blink();
   midiMsg[0] = 20;
@@ -122,7 +122,7 @@ void MyControl::activate() {
 }
 
 void MyControl::desactivate() {
-  isActive = false;
+  setActivity(false);
   myTimer = 0;
   if (turbo) {
     redLed.off();
@@ -154,5 +154,5 @@ void MyControl::setLeds() {
 
 void MyControl::blink() {
   isBlinking = true;
-  greenLed.blink(redLed, 50, 11);
+  greenLed.blink(&redLed, 50, 11);
 }

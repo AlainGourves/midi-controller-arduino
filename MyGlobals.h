@@ -3,16 +3,15 @@
 
 const extern int controlsNumber;  // number of controllers
 
-struct AChannel {
+typedef struct {
   int id;
   bool isUsed;
-};
+} AChannel;
 
-extern struct AChannel A;
-extern struct AChannel B;
-extern struct AChannel C;
+extern AChannel A;
+extern AChannel B;
+extern AChannel C;
 
-extern struct AChannel theChannels[];
-
+extern AChannel theChannels[];
 
 #endif
