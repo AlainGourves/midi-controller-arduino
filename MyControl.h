@@ -19,14 +19,14 @@
 class MyControl {
 
 private:
-  int encoderPin1, encoderPin2, switchPin1, switchPin2, ledPin1, ledPin2;
-  int channel;
+  uint8_t encoderPin1, encoderPin2, switchPin1, switchPin2, ledPin1, ledPin2;
+  uint8_t channel;
   bool isActive;
   bool turbo;  // Values incremented by +/-1 when false, +/-10 when true
   MyButton sw1, sw2;
   MyLed greenLed, redLed;
   Encoder myEnc;
-  int increment;
+  uint8_t increment;
   long oldPosition;
   bool isBlinking;
 
@@ -38,16 +38,16 @@ private:
 
 
 public:
-  MyControl(int encoderPin1, int encoderPin2, int switchPin1, int switchPin2, int ledPin1, int ledPin2);
+  MyControl(uint8_t encoderPin1, uint8_t encoderPin2, uint8_t switchPin1, uint8_t switchPin2, uint8_t ledPin1, uint8_t ledPin2);
   void init();
   int midiMsg[];
-  void setChannel(int);
+  void setChannel(uint8_t);
   void setActivity(bool);
-  void setIncrement(int);
+  void setIncrement(uint8_t);
   void setMidiMsg(int*);
-  int getChannel();
+  uint8_t getChannel();
   bool getActivity();
-  int getIncrement();
+  uint8_t getIncrement();
   int* getMidiMsg();
   void update();
   void activate();

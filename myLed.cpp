@@ -58,7 +58,7 @@ void MyLed::blink(long rate) {
   update();
 }
 
-void MyLed::blink(MyLed const &led, long rate, int iterations) {
+void MyLed::blink(MyLed &led, long rate, int iterations) {
   if (!_isBlinking) {
     _blinkIterations = iterations;
   }

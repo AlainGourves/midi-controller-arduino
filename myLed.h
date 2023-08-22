@@ -9,7 +9,7 @@ class MyLed {
   void update();
   void loop();
   void blink(long rate);
-  void blink(MyLed const & led, long rate, int iterations);
+  void blink(MyLed & led, long rate, int iterations);
   bool getBlinking();
   void on();
   void off();

@@ -10,8 +10,8 @@
 // MyControl::MyControl(int encoderPin1, int encoderPin2, int switchPin1, int
 // switchPin2, int ledPin1, int ledPin2)
 //   : sw1(switchPin1), sw2(switchPin2), greenLed(ledPin1), redLed(ledPin2)
-MyControl::MyControl(int encoderPin1, int encoderPin2, int switchPin1,
-                     int switchPin2, int ledPin1, int ledPin2)
+MyControl::MyControl(uint8_t encoderPin1, uint8_t encoderPin2, uint8_t switchPin1,
+                     uint8_t switchPin2, uint8_t ledPin1, uint8_t ledPin2)
     : myEnc(encoderPin1, encoderPin2),
       sw1(switchPin1),
       sw2(switchPin2),
@@ -33,11 +33,11 @@ void MyControl::init() {
                                       // memory from one location to another
 }
 
-void MyControl::setChannel(int channel_) { channel = channel_; }
+void MyControl::setChannel(uint8_t channel_) { channel = channel_; }
 
 void MyControl::setActivity(bool val_) { isActive = val_; }
 
-void MyControl::setIncrement(int incr_) { increment = incr_; }
+void MyControl::setIncrement(uint8_t incr_) { increment = incr_; }
 
 void MyControl::setMidiMsg(int *msg_) {
   // memcpy(msg_, midiMsg, sizeof(msg_));
@@ -52,11 +52,11 @@ void MyControl::setMidiMsg(int *msg_) {
   Serial.println(midiMsg[2]);
 }
 
-int MyControl::getChannel() { return channel; }
+uint8_t MyControl::getChannel() { return channel; }
 
 bool MyControl::getActivity() { return isActive; }
 
-int MyControl::getIncrement() { return increment; }
+uint8_t MyControl::getIncrement() { return increment; }
 
 int *MyControl::getMidiMsg() { return midiMsg; }
 
@@ -154,5 +154,5 @@ void MyControl::setLeds() {
 
 void MyControl::blink() {
   isBlinking = true;
-  greenLed.blink(&redLed, 50, 11);
+  greenLed.blink(redLed, 50, 11);
 }
