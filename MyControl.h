@@ -2,6 +2,7 @@
 #define MyControl_h
 
 #include <Arduino.h>
+// #include "MyGlobals.h"
 
 /* Encoder Library
  * http://www.pjrc.com/teensy/td_libs_Encoder.html
@@ -13,14 +14,12 @@
 
 #include "MyButton.h"
 #include "MyLed.h"
-#include "MyGlobals.h"
 
 
 class MyControl {
 
 private:
-  uint8_t encoderPin1, encoderPin2, switchPin1, switchPin2, ledPin1, ledPin2;
-  uint8_t channel;
+  uint8_t encoderPin1, encoderPin2, switchPin1, switchPin2, ledPin1, ledPin2, channel;
   bool isActive;
   bool turbo;  // Values incremented by +/-1 when false, +/-10 when true
   MyButton sw1, sw2;
@@ -38,17 +37,14 @@ private:
 
 
 public:
-  MyControl(uint8_t encoderPin1, uint8_t encoderPin2, uint8_t switchPin1, uint8_t switchPin2, uint8_t ledPin1, uint8_t ledPin2);
+  MyControl(uint8_t encoderPin1, uint8_t encoderPin2, uint8_t switchPin1, uint8_t switchPin2, uint8_t ledPin1, uint8_t ledPin2, uint8_t channel);
   void init();
-  int midiMsg[];
   void setChannel(uint8_t);
-  void setActivity(bool);
-  void setIncrement(uint8_t);
-  void setMidiMsg(int*);
   uint8_t getChannel();
+  void setActivity(bool);
   bool getActivity();
+  void setIncrement(uint8_t);
   uint8_t getIncrement();
-  int* getMidiMsg();
   void update();
   void activate();
   void desactivate();

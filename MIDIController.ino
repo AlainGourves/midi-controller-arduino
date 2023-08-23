@@ -1,10 +1,4 @@
 #include "MyGlobals.h"
-
-// MIDI
-#include <USB-MIDI.h>
-// Create and bind the MIDI interface to the default hardware Serial port
-USBMIDI_CREATE_DEFAULT_INSTANCE();
-
 #include "MyControl.h"
 
 int myChannel = 1;
@@ -12,6 +6,15 @@ int myChannel = 1;
 // Timer
 unsigned long previousTimer;
 const long ACTIVE_SENSING_PERIOD = 10000;
+
+
+MyControl ctrlr1(3, 2, 4, 5, 6, 7, 10);
+// MyControl ctrlr2(3, 2, 4, 5, 6, 7, 11);
+// MyControl ctrlr3(3, 2, 4, 5, 6, 7 ,12);
+
+MyControl controllers[1] = {ctrlr1};
+// MyControl controllers[3] = {ctrlr1, ctrlr2, ctrlr3};
+
 
 /* -----------------------------------------------------------------------------------------DEBUGGING-----------*/
 #define DEBUG true  // flag to turn on/off debugging, true to have Serial
@@ -37,29 +40,32 @@ static void OnControlChange(byte channel, byte number, byte value) {
       // - controller activation (0x20)
       // - controller desactivation (0x30)
       if (value == 0x10) {
-        int myChannel = findUnusedController();
-        if (myChannel != -1) {
-          MIDI.sendControlChange(20, myChannel - 1, myChannel); // ControlNumber, ControlValue, Channel
+        int newChannel = findUnusedController();
+        if (newChannel != -1) {
+          MIDI.sendControlChange(20, newChannel - 1, newChannel);  // ControlNumber, ControlValue, Channel
         } else {
           // envoyer un message pour dire qu'il n'y a plus de controller libre
           // TODO in JS
-          MIDI.sendControlChange(20, 0, myChannel); // ControlNumber, ControlValue, Channel
+          MIDI.sendControlChange(20, 0, channel);  // ControlNumber, ControlValue, Channel
         }
       } else if (value == 0x20) {
         // Activation
         // 1) find the message's recipient (his own channel  = param
         // 'channel')
-        // TODO
+        int idx = findByChannelNumber(channel);
+        Serial.print("controlleur index: ");
+        Serial.println(idx);
+        MyControl ctrl = controllers[idx];
         // 2) ask him to activate itself, and to reply with a
         // confirmation message
+        ctrl.activate();
       } else if (value == 0x30) {
         // Desactivation
         // update channels array
         // 1) find the message's recipient (his own channel  = param
         // 'channel')
         // TODO
-        int idx = findByChannelNumber(channel);
-        theChannels[idx].isUsed = false;
+        //        int idx = findByChannelNumber(channel);
       } else if (value == 0x40) {
         // pseudo Active Sensing message
       }
@@ -69,13 +75,6 @@ static void OnControlChange(byte channel, byte number, byte value) {
       break;
   }
 }
-
-MyControl ctrlr1(3, 2, 4, 5, 6, 7);
-// MyControl ctrlr2(3, 2, 4, 5, 6, 7);
-// MyControl ctrlr3(3, 2, 4, 5, 6, 7);
-
-MyControl controllers[1] = { ctrlr1 };
-// MyControl controllers[3] = {ctrlr1, ctrlr2, ctrlr3};
 
 void setup() {
   Serial.begin(31250);  // MIDI baud rate
@@ -92,11 +91,7 @@ void setup() {
 
   Serial.println(F("Arduino ready!"));
 
-  // Set default channels
-  ctrlr1.setChannel(10);
-  // ctrlr2.setChannel(11);
-  // ctrlr3.setChannel(12);
-  ctrlr1.activate();
+  // ctrlr1.activate();
 }
 
 void loop() {
@@ -138,12 +133,11 @@ void loop() {
 */
 }
 
-
 int findUnusedController() {
   // TODO: error handling (no more free channel)
-  for (int i = 0; i < controlsNumber; i++) {
+  for (int i = 0; i < 3; i++) {
     if (controllers[i].getActivity() == false) {
-      return i;
+      return controllers[i].getChannel();
     }
   }
   // No more free controller
@@ -151,7 +145,7 @@ int findUnusedController() {
 }
 
 int findByChannelNumber(int channel_) {
-  for (int i = 0; i < controlsNumber; i++) {
+  for (int i = 0; i < 3; i++) {
     if (controllers[i].getChannel() == channel_) {
       return i;
     }
