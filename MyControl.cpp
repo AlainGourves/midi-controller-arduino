@@ -10,40 +10,39 @@
 // MyControl::MyControl(int encoderPin1, int encoderPin2, int switchPin1, int
 // switchPin2, int ledPin1, int ledPin2)
 //   : sw1(switchPin1), sw2(switchPin2), greenLed(ledPin1), redLed(ledPin2)
-MyControl::MyControl(uint8_t encoderPin1, uint8_t encoderPin2,
-                     uint8_t switchPin1, uint8_t switchPin2, uint8_t ledPin1,
-                     uint8_t ledPin2, uint8_t channel)
-    : myEnc(encoderPin1, encoderPin2),
-      sw1(switchPin1),
-      sw2(switchPin2),
-      greenLed(ledPin1),
-      redLed(ledPin2),
-      channel(channel) {
+MyControl::MyControl(uint8_t _encoderPin1, uint8_t _encoderPin2,
+                     uint8_t _switchPin1, uint8_t _switchPin2, uint8_t _ledPin1,
+                     uint8_t _ledPin2, uint8_t _channel)
+    : _myEnc(_encoderPin1, _encoderPin2),
+      _sw1(_switchPin1),
+      _sw2(_switchPin2),
+      _greenLed(_ledPin1),
+      _redLed(_ledPin2),
+      _channel(_channel) {
   init();
 }
 
 void MyControl::init() {
   // default values
-  isActive = false;
-  turbo = false;
-  isBlinking = false;
-  increment = 0;
+  _isActive = false;
+  _turbo = false;
+  _isBlinking = false;
+  _increment = 0;
   _myTimer = 0;
-  long oldPosition = 0;
-
+  _oldPosition = 0;
 }
 
-void MyControl::setChannel(uint8_t channel_) { channel = channel_; }
+void MyControl::setChannel(uint8_t channel_) { _channel = channel_; }
 
-void MyControl::setActivity(bool val_) { isActive = val_; }
+void MyControl::setActivity(bool val_) { _isActive = val_; }
 
-void MyControl::setIncrement(int incr_) { increment = incr_; }
+void MyControl::setIncrement(int incr_) { _increment = incr_; }
 
-uint8_t MyControl::getChannel() { return channel; }
+uint8_t MyControl::getChannel() { return _channel; }
 
-bool MyControl::getActivity() { return isActive; }
+bool MyControl::getActivity() { return _isActive; }
 
-int MyControl::getIncrement() { return increment; }
+int MyControl::getIncrement() { return _increment; }
 
 void MyControl::setTimer() { _myTimer = millis(); }
 
@@ -51,15 +50,15 @@ unsigned long MyControl::getTimer() { return _myTimer; }
 
 void MyControl::update() {
   // Encoder ----------
-  if (isActive) {
-    long newPosition = myEnc.read() >> 2;  // encoder reads 1 step as 4
-    if (newPosition != oldPosition) {
-      int diff = newPosition - oldPosition;
+  if (_isActive) {
+    long newPosition = _myEnc.read() >> 2;  // encoder reads 1 step as 4
+    if (newPosition != _oldPosition) {
+      int diff = newPosition - _oldPosition;
       if (diff > 0) setIncrement(1);
       if (diff < 0) setIncrement(3);
-      if (diff > 0 && turbo) setIncrement(10);
-      if (diff < 0 && turbo) setIncrement(30);
-      oldPosition = newPosition;
+      if (diff > 0 && _turbo) setIncrement(10);
+      if (diff < 0 && _turbo) setIncrement(30);
+      _oldPosition = newPosition;
       // TODO: Send MIDI message
       //  MIDI.sendControlChange(21, getIncrement(), getChannel());
     } else {
@@ -70,26 +69,26 @@ void MyControl::update() {
   }
 
   // Momentary Switches -----------
-  if (sw1.isPressed()) {
-    // Send message to reinit increment value to default
+  if (_sw1.isPressed()) {
+    // -1: Signal to send message to reinit increment value to default
     setIncrement(-1);
   }
-  if (sw2.isPressed() && isActive) {
-    turbo = !turbo;
+  if (_sw2.isPressed() && _isActive) {
+    _turbo = !_turbo;
   }
 
   // Timer
   unsigned long elapsed = millis() - getTimer();
-  if (elapsed >= ACTIVE_SENSING_PERIOD && isActive) {
+  if (elapsed >= ACTIVE_SENSING_PERIOD && _isActive) {
     Serial.println(F("Le contrôleur doit être dans les choux!"));
     desactivate();
   }
 
-  if (isBlinking) {
-    if (greenLed.getBlinking()) {
+  if (_isBlinking) {
+    if (_greenLed.getBlinking()) {
       blink();
     } else {
-      isBlinking = false;
+      _isBlinking = false;
     }
   } else {
     setLeds();
@@ -106,9 +105,9 @@ void MyControl::activate() {
 
 void MyControl::desactivate() {
   setActivity(false);
-  if (turbo) {
-    redLed.off();
-    turbo = false;
+  if (_turbo) {
+    _redLed.off();
+    _turbo = false;
   }
 }
 
@@ -116,19 +115,19 @@ void MyControl::reinitTimer() { setTimer(); }
 
 void MyControl::setLeds() {
   // leds status
-  if (isActive) {
-    greenLed.on();
+  if (_isActive) {
+    _greenLed.on();
   } else {
-    greenLed.off();
+    _greenLed.off();
   }
-  if (turbo) {
-    redLed.on();
+  if (_turbo) {
+    _redLed.on();
   } else {
-    redLed.off();
+    _redLed.off();
   }
 }
 
 void MyControl::blink() {
-  isBlinking = true;
-  greenLed.blink(redLed, 60, 9); // 9 alternate blinks of 60ms
+  _isBlinking = true;
+  _greenLed.blink(_redLed, 60, 9); // 9 alternate blinks of 60ms
 }
