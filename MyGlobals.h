@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef MyGlobals_h
 #define MyGlobals_h
 

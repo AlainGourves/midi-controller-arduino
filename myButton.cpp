@@ -1,5 +1,6 @@
-#include <Arduino.h>
 #include "MyButton.h"
+
+#include <Arduino.h>
 
 MyButton::MyButton(int pin) {
   _pin = pin;
@@ -35,12 +36,10 @@ int MyButton::getState() {
 
 bool MyButton::hasChanged() {
   if (_has_changed) {
-		_has_changed = false;
-		return true;
-	}
-	return false;
+    _has_changed = false;
+    return true;
+  }
+  return false;
 }
 
-bool MyButton::isPressed() {
-  return (getState() == LOW && hasChanged());
-}
+bool MyButton::isPressed() { return (getState() == LOW && hasChanged()); }

@@ -11,7 +11,7 @@ private:
   int _lastReading;
   bool _has_changed;
   unsigned long _ignoreUntil;
-  const unsigned long _debounceDelay = 50;
+  static const unsigned long _debounceDelay = 50;
 
 public:
   MyButton(int pin);

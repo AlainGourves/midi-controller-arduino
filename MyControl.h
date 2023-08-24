@@ -15,42 +15,44 @@
 #include "MyButton.h"
 #include "MyLed.h"
 
-
 class MyControl {
-
-private:
-  uint8_t encoderPin1, encoderPin2, switchPin1, switchPin2, ledPin1, ledPin2, channel;
+ private:
+  uint8_t encoderPin1, encoderPin2, switchPin1, switchPin2, ledPin1, ledPin2,
+      channel;
   bool isActive;
   bool turbo;  // Values incremented by +/-1 when false, +/-10 when true
   MyButton sw1, sw2;
   MyLed greenLed, redLed;
   Encoder myEnc;
-  uint8_t increment;
+  int increment;
   long oldPosition;
   bool isBlinking;
 
+  void setIncrement(int);
+
   // Timer
-  unsigned long myTimer;
+  unsigned long _myTimer;
   static const long ACTIVE_SENSING_PERIOD = 10000;
+  void setTimer();
 
   void setLeds();
+  void blink();
 
-
-public:
-  MyControl(uint8_t encoderPin1, uint8_t encoderPin2, uint8_t switchPin1, uint8_t switchPin2, uint8_t ledPin1, uint8_t ledPin2, uint8_t channel);
+ public:
+  MyControl(uint8_t encoderPin1, uint8_t encoderPin2, uint8_t switchPin1,
+            uint8_t switchPin2, uint8_t ledPin1, uint8_t ledPin2,
+            uint8_t channel);
   void init();
+  unsigned long getTimer();
   void setChannel(uint8_t);
   uint8_t getChannel();
   void setActivity(bool);
   bool getActivity();
-  void setIncrement(uint8_t);
-  uint8_t getIncrement();
+  int getIncrement();
   void update();
   void activate();
   void desactivate();
   void reinitTimer();
-  void sendMessage();
-  void blink();
 };
 
 #endif

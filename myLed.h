@@ -8,8 +8,9 @@ class MyLed {
   void init();
   void update();
   void loop();
-  void blink(long rate);
-  void blink(MyLed & led, long rate, int iterations);
+  void blink(long rate);  // Single LED blinking
+  void blink(MyLed& led, long rate,
+             int iterations);  // for 2 LEDs alternate blinking
   bool getBlinking();
   void on();
   void off();

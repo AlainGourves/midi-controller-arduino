@@ -36,15 +36,9 @@ bool MyLed::getBlinking() { return _isBlinking; }
 void MyLed::update() {
   unsigned long currentMillis = millis();
   if (currentMillis - _previousMillis >= _interval) {
-    _previousMillis = currentMillis;
-    setState(!_ledState);
-  }
-}
-
-void MyLed::loop() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - _previousMillis >= _interval && _blinkIterations > 0) {
-    _blinkIterations -= 1;
+    if ( _blinkIterations > 0) {
+      _blinkIterations -= 1;
+    }
     _previousMillis = currentMillis;
     setState(!_ledState);
   }
@@ -66,5 +60,5 @@ void MyLed::blink(MyLed &led, long rate, int iterations) {
   _isBlinking = true;
   int st = getState();
   led.setState(!st);
-  loop();
+  update();
 }
