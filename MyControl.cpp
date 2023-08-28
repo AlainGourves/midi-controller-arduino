@@ -53,7 +53,7 @@ void MyControl::update() {
   if (_isActive) {
     long newPosition = _myEnc.read() >> 2;  // encoder reads 1 step as 4
     if (newPosition != _oldPosition) {
-      int diff = newPosition - _oldPosition;
+      int diff = _oldPosition - newPosition;
       if (diff > 0) setIncrement(1);
       if (diff < 0) setIncrement(3);
       if (diff > 0 && _turbo) setIncrement(10);

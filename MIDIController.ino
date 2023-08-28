@@ -5,11 +5,22 @@
 unsigned long previousTimer;
 const long ACTIVE_SENSING_PERIOD = 10000;
 
-MyControl ctrlr1(3, 2, 4, 5, 6, 7, 10);
+// NOTE: first pin/parameter must be an interrupt pin
+// Encoder needs 2 pins, the first of which should be an interrupt pin for good performance
+// (cf. https://www.pjrc.com/teensy/td_libs_Encoder.html)
+/*
+  5 external interrupts on the Pro Micro:
+  pin 3         -->  INT0
+  pin 2         -->  INT1
+  pin 0 (TX0)   -->  INT2
+  pin 1 (RX1)   -->  INT3
+  pin 7         -->  INT6
+*/
+MyControl ctrlr1(2, 3, 4, 5, 6, 7, 10);
 // MyControl ctrlr2(3, 2, 4, 5, 6, 7, 11);
 // MyControl ctrlr3(3, 2, 4, 5, 6, 7 ,12);
 
-MyControl *controllers[1] = {&ctrlr1};
+MyControl *controllers[1] = { &ctrlr1 };
 // MyControl controllers[3] = {&ctrlr1, &ctrlr2, &ctrlr3};
 
 /* ------------------------------------------------------DEBUGGING-----------*/
@@ -41,13 +52,13 @@ static void OnControlChange(byte channel, byte number, byte value) {
         int newChannel = findUnusedController();
         if (newChannel != -1) {
           MIDI.sendControlChange(
-              20, newChannel - 1,
-              newChannel);  // ControlNumber, ControlValue, Channel
+            20, newChannel - 1,
+            newChannel);  // ControlNumber, ControlValue, Channel
         } else {
           // envoyer un message pour dire qu'il n'y a plus de controller libre
           // TODO in JS
           MIDI.sendControlChange(
-              20, 0, channel);  // ControlNumber, ControlValue, Channel
+            20, 0, channel);  // ControlNumber, ControlValue, Channel
         }
       } else if (value == 0x20 && idx != -1) {  // DEC 32
         // Activation of the controller and confirmation message
